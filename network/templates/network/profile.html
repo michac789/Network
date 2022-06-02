@@ -1,0 +1,28 @@
+{% extends 'network/layout.html' %}
+{% load static %}
+
+{% block script %}
+    <script src="{% static "network/profile.js" %}"></script>
+{% endblock script %}
+
+{% block body %}
+    {% if not user.is_authenticated %}
+        NOT LOGGED IN
+    {% elif self %}
+        This is yourself
+    {% elif followed %}
+        Followed
+        <button id="unfollow">Unfollow</button>
+    {% else %}
+        TODO - follow button
+        <button id="follow">Follow</button>
+    {% endif %}
+    Username: {{ username }}
+    Followers: {{ follower }}
+    Followings: {{ following }}
+    {% for post in posts %}
+        {{ post.title }}
+        {{ post.time }}
+        {{ post.like }}
+    {% endfor %}
+{% endblock body %}

@@ -10,6 +10,7 @@ class User(AbstractUser):
 class Post(models.Model):
     id = models.AutoField(primary_key=True)
     username = models.ForeignKey(User, on_delete=models.CASCADE, related_name="post")
+    title = models.CharField(max_length=64, default="")
     content = models.CharField(max_length=512)
     time = models.DateTimeField(auto_now=True)
     like = models.IntegerField(default=0)

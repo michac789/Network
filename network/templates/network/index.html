@@ -2,4 +2,21 @@
 
 {% block body %}
     TODO
+    <form action="{% url 'index' %}" method="post">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" value="Post">
+    </form>
+
+    {% for post in posts %}
+        <div>
+            <a href="{% url 'profile_view' username=post.username %}">
+                {{ post.username }}
+            </a>
+            {{ post.title }}
+            {{ post.time }}
+            {{ post.like }}
+            {% comment %} TODO - Fix styling {% endcomment %}
+        </div>
+    {% endfor %}
 {% endblock %}
