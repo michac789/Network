@@ -22,18 +22,24 @@
             </a>
             {{ post.title }}
             {{ post.time }}
-            {{ post.like }} <br>
+            <div id="likes_{{post.id}}">
+                {{ post.likes }}
+            </div>
 
-            <button class="like_button" value={{ post.id }}>
-                <div id="like_button_{{post.id}}">
-                    {% if post.liked %}
-                    UNLIKE
-                    {% else %}
-                    LIKE
-                    {% endif %}
-                </div>
-            </button>
-
+            {% if post.liked == None %}
+                Please log in to like or dislike posts!
+            {% else %}
+                <button class="like_button" value={{ post.id }}>
+                    <div id="like_button_{{post.id}}">
+                        {% if post.liked %}
+                        UNLIKE
+                        {% else %}
+                        LIKE
+                        {% endif %}
+                    </div>
+                </button>
+            {% endif %}
+            <br><br>
 
             {% comment %} TODO - Fix styling {% endcomment %}
         </div>

@@ -31,17 +31,18 @@ def index(request):
                 content = content,
             )
         return HttpResponseRedirect(reverse("network:index"))
-    else:
-        posts = Post.objects.all().order_by("-time")
-        for post in posts:
+    posts = Post.objects.all().order_by("-time")
+    for post in posts:
+        if request.user.is_authenticated:
             post.liked = (True if LikePair.objects.filter(
                     liker = request.user,
                     likedpost = post.id
                 ).count() == 1 else False)
-        return render(request, "network/index.html", {
-            "form": PostForm,
-            "posts": posts,
-        })
+        post.likes = LikePair.objects.filter(likedpost = post.id).count()
+    return render(request, "network/index.html", {
+        "form": PostForm,
+        "posts": posts,
+    })
 
 
 def profile_view(request, username):
@@ -102,16 +103,19 @@ def likepost(request, post_id):
         liker = request.user,
         likedpost = post_id
     )
+    likes = LikePair.objects.filter(likedpost = post_id).count()
     if likepair.count() == 0:
         newlike = LikePair(
             liker = User.objects.get(username = request.user),
             likedpost = Post.objects.get(id = post_id),
         )
         newlike.save()
-        return JsonResponse({ "success": "liked", "post_id": post_id })
+        return JsonResponse({ "success": "liked", "post_id": post_id,
+                             "likes": likes})
     else:
         likepair.delete()
-        return JsonResponse({ "success": "unliked", "post_id": post_id })
+        return JsonResponse({ "success": "unliked", "post_id": post_id,
+                             "likes": likes})
 
 
 # retrieve data from request

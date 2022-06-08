@@ -5,9 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // like or dislike button functionality
     document.querySelectorAll(".like_button").forEach(
         el => el.onclick = () => { like(el.value) })
-
-
-
+    
 })
 
 
@@ -23,9 +21,11 @@ function like(val) {
     .then(result => {
         console.log(result)
         if (result.success === "liked"){
-            document.querySelector(`#like_button_${result.post_id}`).innerHTML = "UNLIKE"
+            document.querySelector(`#like_button_${result.post_id}`).innerHTML = "UNLIKE";
+            document.querySelector(`#likes_${result.post_id}`).innerHTML = result.likes + 1;
         } else {
-            document.querySelector(`#like_button_${result.post_id}`).innerHTML = "LIKE"
+            document.querySelector(`#like_button_${result.post_id}`).innerHTML = "LIKE";
+            document.querySelector(`#likes_${result.post_id}`).innerHTML = result.likes - 1;
         }
     })
     .catch(error => console.log(`Error detected: ${error}`))
