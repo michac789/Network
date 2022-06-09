@@ -1,5 +1,55 @@
 {% extends "network/layout.html" %}
+{% load static %}
+
+{% block script %}
+    <script src="{% static "network/index.js" %}"></script>
+{% endblock script %}
 
 {% block body %}
-    TODO
+    TODOO
+    <button id="test" data-name="aloha">CLICK</button>
+
+    <button onclick="test"></button>
+
+    <form action="{% url 'network:index' %}" method="post">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" value="Post">
+    </form>
+
+    {% for post in posts %}
+        <div class="postdiv" id={{ post.id }}>
+            <a href="{% url 'network:profile_view' username=post.username %}">
+                {{ post.username }}
+            </a><br>
+            <article class="title">
+                <strong>{{ post.title }}</strong><br>
+            </article>
+            <article class="content">{{ post.content }}</article>
+            {{ post.time }}
+            <div id="likes_{{post.id}}">
+                {{ post.likes }}
+            </div>
+
+            {% if post.liked == None %}
+                Please log in to like or dislike posts!
+            {% else %}
+                <button class="like_button" data-id={{ post.id }}>
+                    <div id="like_button_{{post.id}}">
+                        {% if post.liked %}
+                        UNLIKE
+                        {% else %}
+                        LIKE
+                        {% endif %}
+                    </div>
+                </button>
+                {% if post.username == request.user %}
+                    <button class="edit_button" data-id={{ post.id }}>Edit Post</button>
+                {% endif %}
+            {% endif %}
+            <br><br>
+
+            {% comment %} TODO - Fix styling {% endcomment %}
+        </div>
+    {% endfor %}
 {% endblock %}
