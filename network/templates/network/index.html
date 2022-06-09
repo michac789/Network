@@ -7,7 +7,9 @@
 
 {% block body %}
     TODO
-    <button id="test" value="aloha">CLICK</button>
+    <button id="test" data-name="aloha">CLICK</button>
+
+    <button onclick="test"></button>
 
     <form action="{% url 'network:index' %}" method="post">
         {% csrf_token %}
@@ -16,11 +18,14 @@
     </form>
 
     {% for post in posts %}
-        <div>
+        <div class="postdiv" id={{ post.id }}>
             <a href="{% url 'network:profile_view' username=post.username %}">
                 {{ post.username }}
-            </a>
-            {{ post.title }}
+            </a><br>
+            <article class="title">
+                <strong>{{ post.title }}</strong><br>
+            </article>
+            <article class="content">{{ post.content }}</article>
             {{ post.time }}
             <div id="likes_{{post.id}}">
                 {{ post.likes }}
@@ -29,7 +34,7 @@
             {% if post.liked == None %}
                 Please log in to like or dislike posts!
             {% else %}
-                <button class="like_button" value={{ post.id }}>
+                <button class="like_button" data-id={{ post.id }}>
                     <div id="like_button_{{post.id}}">
                         {% if post.liked %}
                         UNLIKE
@@ -38,6 +43,9 @@
                         {% endif %}
                     </div>
                 </button>
+                {% if post.username == request.user %}
+                    <button class="edit_button" data-id={{ post.id }}>Edit Post</button>
+                {% endif %}
             {% endif %}
             <br><br>
 
