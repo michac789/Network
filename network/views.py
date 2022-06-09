@@ -8,6 +8,8 @@ from django.contrib.auth.decorators import login_required
 from django import forms
 from json import loads
 
+from pandas import json_normalize
+
 
 from .models import User, Post, FollowPair, LikePair
 
@@ -70,11 +72,13 @@ def profile_view(request, username):
 @csrf_exempt
 @login_required
 def like_comment(request):
+    print("HOLA")
     if request.method != "POST":
         return JsonResponse({
             "error": "POST request required",
         }, status = 400)
     data = loads(request.body)
+    print(data)
     print(data["text"])
     if 1 == 1:
         return JsonResponse({"e": "e"})
@@ -116,6 +120,41 @@ def likepost(request, post_id):
         likepair.delete()
         return JsonResponse({ "success": "unliked", "post_id": post_id,
                              "likes": likes})
+
+
+@csrf_exempt
+@login_required
+def editpost(request, post_id):
+    print("EDITPOST API ROUTE")
+    # check if the post_id is valid
+    try: post = Post.objects.get(id = post_id)
+    except Post.DoesNotExist:
+        return JsonResponse({
+            "error": "Invalid post id",
+        }, status = 404)
+    # only accept fetch request
+    if request.method != "FETCH":
+        return JsonResponse({
+            "error": "Only accept fetch request",
+        }, status = 400)
+    # check if the user is valid (the one who created the post)
+    if request.user != Post.objects.get(id = post_id).username:
+        print("ILLEGAL")
+        return JsonResponse({
+            "error": "Unauthorized account"
+        }, status = 400)
+    # save edited content to database
+    data = loads(request.body)
+    content = data["edited_content"]
+    print(content)
+    post = Post.objects.get(id = post_id)
+    print(post)
+    post.content = content
+    
+    print(post.content)
+    post.save()
+    return JsonResponse({ "success": "edit saved", "post_id": post_id,
+                         "content": content })
 
 
 # retrieve data from request
