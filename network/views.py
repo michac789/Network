@@ -1,21 +1,20 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
-from django.http import HttpResponseRedirect, Http404, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
+from django.utils.safestring import mark_safe
 from django import forms
 from json import loads
-
-from pandas import json_normalize
 
 
 from .models import User, Post, FollowPair, LikePair
 
 
 class PostForm(forms.Form):
-    title = forms.CharField(label = "title", max_length = 64)
+    title = forms.CharField(label = mark_safe("Title"), max_length = 64)
     content = forms.CharField(widget = forms.Textarea(attrs = {
         'placeholder': "Enter content here..."
     }))
@@ -44,6 +43,19 @@ def index(request):
     return render(request, "network/index.html", {
         "form": PostForm,
         "posts": posts,
+        "block_comment": not request.user.is_authenticated,
+    })
+    
+
+@login_required(login_url="network:login")
+def following(request):
+    followpairs = FollowPair.objects.filter(follower = request.user)
+    following_ids = []
+    for followpair in followpairs: following_ids.append(followpair.following.id)
+    return render(request, "network/index.html", {
+        "following_tab": True,
+        "posts": Post.objects.filter(username__in = following_ids),
+        "block_comment": not request.user.is_authenticated,
     })
 
 
@@ -61,11 +73,12 @@ def profile_view(request, username):
         "username": username,
         "follower": FollowPair.objects.filter(following = user).count(),
         "following": FollowPair.objects.filter(follower = user).count(),
-        "posts": Post.objects.filter(username = request.user).order_by("-time"),
-        "self": (True if user == request.user else False),
-        "followed": (True if
+        "posts": (Post.objects.filter(username = request.user).order_by("-time") if
+                  request.user.is_authenticated else []),
+        "self": user == request.user,
+        "followed": ((True if
             FollowPair.objects.filter(follower = request.user, following = user).count() == 1
-            else False),
+            else False) if request.user.is_authenticated else None),
     })
 
 
@@ -155,12 +168,6 @@ def editpost(request, post_id):
     post.save()
     return JsonResponse({ "success": "edit saved", "post_id": post_id,
                          "content": content })
-
-
-# retrieve data from request
-# data = loads(request.body)
-# print(data)
-# print(request.user)
 
 
 def login_view(request):

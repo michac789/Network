@@ -1,39 +1,56 @@
 {% extends "network/layout.html" %}
 {% load static %}
 
+{% block title %}Network Dashboard{% endblock title %}
+
 {% block script %}
     <script src="{% static "network/index.js" %}"></script>
+    <link href="{% static 'network/styles.css' %}" rel="stylesheet">
 {% endblock script %}
 
 {% block body %}
-    TODOO
-    <button id="test" data-name="aloha">CLICK</button>
-
-    <button onclick="test"></button>
-
-    <form action="{% url 'network:index' %}" method="post">
-        {% csrf_token %}
-        {{ form }}
-        <input type="submit" value="Post">
-    </form>
+    {% if following_tab %}
+        Following Tab - TODO
+    {% else %}
+        {% if user.is_authenticated %}
+            <div class="newpost">
+                <h3>New Post</h3>
+                <form action="{% url 'network:index' %}" method="post">
+                    {% csrf_token %}
+                    {{ form.title.label_tag }}
+                    {{ form.title|linebreaks }}
+                    {{ form.content.label_tag }}<br>
+                    {{ form.content }}
+                    <input type="submit" value="Post">
+                </form>
+            </div>
+        {% else %}
+            <div class="alert alert-warning logintocomment" role="alert">
+                Please log in to create post, like post, and follow other user!
+            </div>
+        {% endif %}
+    {% endif %}
 
     {% for post in posts %}
         <div class="postdiv" id={{ post.id }}>
-            <a href="{% url 'network:profile_view' username=post.username %}">
-                {{ post.username }}
-            </a><br>
+            <article class="username">
+                <a href="{% url 'network:profile_view' username=post.username %}">
+                    {{ post.username }}
+                </a><br>
+            </article>
             <article class="title">
                 <strong>{{ post.title }}</strong><br>
             </article>
             <article class="content">{{ post.content }}</article>
-            {{ post.time }}
-            <div id="likes_{{post.id}}">
-                {{ post.likes }}
+            
+            <div class="likes" id="likes_{{post.id}}">
+                {{ post.likes }} likes
             </div>
+            <div class="time">
+                Last edited on {{ post.time }}
+            </div><br>
 
-            {% if post.liked == None %}
-                Please log in to like or dislike posts!
-            {% else %}
+            {% if post.liked != None %}
                 <button class="like_button" data-id={{ post.id }}>
                     <div id="like_button_{{post.id}}">
                         {% if post.liked %}
@@ -47,9 +64,7 @@
                     <button class="edit_button" data-id={{ post.id }}>Edit Post</button>
                 {% endif %}
             {% endif %}
-            <br><br>
-
-            {% comment %} TODO - Fix styling {% endcomment %}
+            <br>
         </div>
     {% endfor %}
 {% endblock %}
