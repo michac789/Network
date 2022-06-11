@@ -4,15 +4,17 @@
 {% block title %}Profile Page{% endblock title %}
 
 {% block script %}
-    <script src="{% static "network/profile.js" %}"></script>
-    <script src="https://unpkg.com/react@17/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js" crossorigin></script>
+    {% comment %} <script src="{% static "network/profile.js" %}"></script> {% endcomment %}
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
 {% endblock script %}
 
 {% block body %}
     {% if not user.is_authenticated %}
-        NOT LOGGED IN
+        <div class="alert alert-warning container1" role="alert">
+            You are not logged in! Please log in to create post, like post, and follow other user!
+        </div>
     {% elif self %}
         This is yourself
     {% elif followed %}
@@ -29,30 +31,36 @@
             <button type="submit">Follow</button>
         </form>
     {% endif %}
-    Username: {{ username }}
-    Followers: {{ follower }}
-    Followings: {{ following }}
-    <br>
+
+    <div class="profile_data">
+        <ul>
+            <li><b>Username</b>: {{ username }}</li>
+            <li><b>Followers</b>: {{ follower }}</li>
+            <li><b>Followings</b>: {{ following }}</li>
+        </ul>
+    </div>
 
     {% for post in posts %}
-        {{ post.title }}
-        {{ post.time }}
-        {{ post.like }}
-        <div id="post"></div>
+        {% include "network/post.html" %}
     {% endfor %}
 
-    <div id="post"></div>
+    <div id="abc"></div>
     <script type="text/babel">
+        let x = "{{ following|safe }}"
+        console.log(x)
         function App() {
             return (
                 <div>
-                    HELLO WORLD
-                    {{ post.title }}
-                    {{ post.time }}
-                    {{ post.like }}
+                <h1>API Posts, {x}</h1>
                 </div>
             );
         }
-        ReactDOM.render(<App />, document.querySelector("#post"));
+        ReactDOM.render(<App />, document.querySelector("#abc"));
+    </script>
+
+
+    <div id="post"></div>
+    <script type="text/babel" src="{% static "network/trial.js" %}">
+
     </script>
 {% endblock body %}

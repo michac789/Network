@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
+from django.http import HttpResponseRedirect, Http404, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
@@ -98,6 +98,11 @@ def like_comment(request):
     else: return JsonResponse({
         "error": "only like or dislike value supported",
     }, status = 400)
+    
+    
+def allposts(request):
+    posts = Post.objects.order_by("-time").all()
+    return JsonResponse([post.serialize() for post in posts], safe = False)
     
 
 @csrf_exempt

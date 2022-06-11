@@ -45,6 +45,25 @@
     display: inline-block;
 }
 
-.logintocomment {
+.container1 {
     margin: 10px;
+}
+
+.container2 {
+    font-size: 20px;
+    margin: 10px;
+}
+
+ul {
+  list-style: none;
+  display: table;
+}
+
+li {
+  display: table-row;
+}
+
+b {
+  display: table-cell;
+  padding-right: 4em;
 }

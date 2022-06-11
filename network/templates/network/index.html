@@ -5,12 +5,16 @@
 
 {% block script %}
     <script src="{% static "network/index.js" %}"></script>
-    <link href="{% static 'network/styles.css' %}" rel="stylesheet">
+    <script src="https://unpkg.com/react@17/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
 {% endblock script %}
 
 {% block body %}
     {% if following_tab %}
-        Following Tab - TODO
+        <div class="container2">
+            Here you can see all the posts from the users you follow:
+        </div>
     {% else %}
         {% if user.is_authenticated %}
             <div class="newpost">
@@ -25,46 +29,13 @@
                 </form>
             </div>
         {% else %}
-            <div class="alert alert-warning logintocomment" role="alert">
-                Please log in to create post, like post, and follow other user!
+            <div class="alert alert-warning container1" role="alert">
+                You are not logged in! Please log in to create post, like post, and follow other user!
             </div>
         {% endif %}
     {% endif %}
 
     {% for post in posts %}
-        <div class="postdiv" id={{ post.id }}>
-            <article class="username">
-                <a href="{% url 'network:profile_view' username=post.username %}">
-                    {{ post.username }}
-                </a><br>
-            </article>
-            <article class="title">
-                <strong>{{ post.title }}</strong><br>
-            </article>
-            <article class="content">{{ post.content }}</article>
-            
-            <div class="likes" id="likes_{{post.id}}">
-                {{ post.likes }} likes
-            </div>
-            <div class="time">
-                Last edited on {{ post.time }}
-            </div><br>
-
-            {% if post.liked != None %}
-                <button class="like_button" data-id={{ post.id }}>
-                    <div id="like_button_{{post.id}}">
-                        {% if post.liked %}
-                        UNLIKE
-                        {% else %}
-                        LIKE
-                        {% endif %}
-                    </div>
-                </button>
-                {% if post.username == request.user %}
-                    <button class="edit_button" data-id={{ post.id }}>Edit Post</button>
-                {% endif %}
-            {% endif %}
-            <br>
-        </div>
+        {% include "network/post.html" %}
     {% endfor %}
 {% endblock %}
