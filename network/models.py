@@ -14,15 +14,6 @@ class Post(models.Model):
     content = models.CharField(max_length=512)
     time = models.DateTimeField(auto_now=True)
     
-    def serialize(self):
-        return {
-            "id": self.id,
-            "username": self.username.username,
-            "title": self.title,
-            "content": self.content,
-            "time": self.time.strftime("%b %d %Y, %I:%M %p"),
-        }
-    
 
 class FollowPair(models.Model):
     id = models.AutoField(primary_key=True)

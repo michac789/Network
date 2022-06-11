@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
 })
 
 function like(val) {
-    fetch(`likepost/${val}`, {
+    fetch(`http://127.0.0.1:8000/likepost/${val}`, {
         method: "FETCH",
     })
     .then(response => response.json())

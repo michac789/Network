@@ -45,6 +45,35 @@
     display: inline-block;
 }
 
+@media (min-width: 1000px) {
+    .form_title {
+        width: 60%;
+    }
+    .form_content {
+        width: 70%;
+        height: 200px;
+    }
+}
+
+@media (max-width: 999px) {
+    .form_title {
+        width: 80%;
+    }
+    .form_content {
+        width: 90%;
+        height: 200px;
+    }
+}
+
+#newpostbutton {
+    color: darkslategray;
+    font-size: 20px;
+}
+
+#newpostbutton:hover {
+    background-color: lightgreen;
+}
+
 .container1 {
     margin: 10px;
 }
