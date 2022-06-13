@@ -7,7 +7,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.utils.safestring import mark_safe
 from django import forms
-from django import template
 from json import loads
 from . import util
 from .models import User, Post, FollowPair, LikePair
@@ -145,15 +144,14 @@ def editpost(request, post_id):
     # save edited content to database
     data = loads(request.body)
     content = data["edited_content"]
-    print(content)
     post = Post.objects.get(id = post_id)
-    print(post)
     post.content = content
-    
-    print(post.content)
     post.save()
     return JsonResponse({ "success": "edit saved", "post_id": post_id,
-                         "content": content })
+                         "content": content, "time": post.time,
+                         "likes": LikePair.objects.filter(likedpost = post_id).count(),
+                         "liked": LikePair.objects.filter(likedpost = post_id, liker = request.user).count() == 1
+                        })
     
 
 @csrf_exempt

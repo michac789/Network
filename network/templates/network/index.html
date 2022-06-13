@@ -25,7 +25,7 @@
                     {{ form.title|linebreaks }}
                     {{ form.content.label_tag }}<br>
                     {{ form.content }}<br>
-                    <input type="submit" value="Post" id="newpostbutton">
+                    <input type="submit" value="Post" class="postbutton">
                 </form>
             </div>
         {% else %}
@@ -34,8 +34,13 @@
             </div>
         {% endif %}
     {% endif %}
-
+    
     {% for post in posts %}
         {% include "network/post.html" %}
+    {% empty %}
+        <div class="container card bg-info text-center h3"
+        style="padding:10px;">
+            No Posts Available
+        </div>
     {% endfor %}
 {% endblock %}

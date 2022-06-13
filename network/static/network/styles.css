@@ -33,14 +33,14 @@
     color: purple;
 }
 
-.postdiv > .time {
+.postdiv > .editdiv > .time {
     font-size: 16px;
     font-weight: bold;
     display: inline;
     float: right;
 }
 
-.postdiv > .likes {
+.postdiv > .editdiv > .likes {
     font-size: 20px;
     display: inline-block;
 }
@@ -65,13 +65,22 @@
     }
 }
 
-#newpostbutton {
+.postbutton {
     color: darkslategray;
     font-size: 20px;
 }
 
-#newpostbutton:hover {
+.postbutton:hover {
     background-color: lightgreen;
+}
+
+.like_button, .edit_button {
+    background-color: antiquewhite;
+    margin-right: 10px;
+}
+
+.like_button:hover, .edit_button:hover {
+    background-color: aquamarine;
 }
 
 .container1 {
