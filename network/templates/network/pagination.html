@@ -14,9 +14,9 @@
             </div>
         </li>
         {% if pagination.has_next %}
-            <li class="page-item disabled"><a class="page-link" href="?page={{ pagination.next_page_number }}">Next</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ pagination.next_page_number }}">Next</a></li>
         {% else %}
-            <li class="page-item"><a class="page-link" disabled>Next</a></li>
+            <li class="page-item disabled"><a class="page-link" disabled>Next</a></li>
         {% endif %}
         <li class="page-item"><a class="page-link" href="?page={{ pagination.paginator.num_pages }}">Last</a></li>
     </ul>

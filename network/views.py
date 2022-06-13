@@ -78,7 +78,6 @@ def allposts(request):
 @csrf_exempt
 @login_required(login_url="network:login")
 def likepost(request, post_id):
-    print("LIKEPOST API ROUTE")
     # check if the post_id is valid
     try: post = Post.objects.get(id = post_id)
     except Post.DoesNotExist:
@@ -111,7 +110,6 @@ def likepost(request, post_id):
 @csrf_exempt
 @login_required(login_url="network:login")
 def editpost(request, post_id):
-    print("EDITPOST API ROUTE")
     # check if the post_id is valid
     try: post = Post.objects.get(id = post_id)
     except Post.DoesNotExist:
@@ -145,7 +143,6 @@ def editpost(request, post_id):
 @csrf_exempt
 @login_required(login_url="network:login")
 def followuser(request, user_id):
-    print("FOLLOW FEATURE API ROUTE")
     # check if the user_id is valid
     try: user = User.objects.get(id = user_id)
     except Post.DoesNotExist:
@@ -156,6 +153,11 @@ def followuser(request, user_id):
     if request.method != "PUT":
         return JsonResponse({
             "error": "Only accept PUT request",
+        }, status = 400)
+    # cannot follow self
+    if request.user == user:
+        return JsonResponse({
+            "error": "you cannot follow yourself"
         }, status = 400)
     # create followpair if not created already else delete existing ones
     if FollowPair.objects.filter(follower = request.user, following = user).count() == 0:
