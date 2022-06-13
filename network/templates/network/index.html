@@ -35,6 +35,7 @@
         {% endif %}
     {% endif %}
     
+    {% include "network/pagination.html" %}
     {% for post in posts %}
         {% include "network/post.html" %}
     {% empty %}

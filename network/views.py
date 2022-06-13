@@ -6,10 +6,13 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.utils.safestring import mark_safe
+from django.core.paginator import Paginator
 from django import forms
 from json import loads
 from . import util
 from .models import User, Post, FollowPair, LikePair
+
+POSTS_PER_PAGE = 10
 
 
 class PostForm(forms.Form):
@@ -30,9 +33,11 @@ def index(request):
                 username = request.user, title = title, content = content,
             )
         return HttpResponseRedirect(reverse("network:index"))
+    posts = util.fetchlikes(request, Post.objects.all().order_by("-time"))
     return render(request, "network/index.html", {
         "form": PostForm,
-        "posts": util.fetchlikes(Post.objects.all().order_by("-time"), request),
+        "posts": util.paginate(request, posts, POSTS_PER_PAGE).object_list,
+        "pagination": util.paginate(request, posts, POSTS_PER_PAGE),
         "block_comment": not request.user.is_authenticated,
     })
 
@@ -42,9 +47,11 @@ def following(request):
     followpairs = FollowPair.objects.filter(follower = request.user)
     following_ids = []
     for followpair in followpairs: following_ids.append(followpair.following.id)
+    posts = util.fetchlikes(request, Post.objects.filter(username__in = following_ids))
     return render(request, "network/index.html", {
         "following_tab": True,
-        "posts": util.fetchlikes(Post.objects.filter(username__in = following_ids), request),
+        "posts": util.paginate(request, posts, POSTS_PER_PAGE).object_list,
+        "pagination": util.paginate(request, posts, POSTS_PER_PAGE),
         "block_comment": not request.user.is_authenticated,
     })
 
@@ -56,7 +63,7 @@ def profile_view(request, username):
         "username": username,
         "follower": FollowPair.objects.filter(following = user).count(),
         "following": FollowPair.objects.filter(follower = user).count(),
-        "posts": (util.fetchlikes(Post.objects.filter(username = user).order_by("-time"), request) if
+        "posts": (util.fetchlikes(request, Post.objects.filter(username = user).order_by("-time")) if
                   request.user.is_authenticated else []),
         "self": user == request.user,
         "followed": (FollowPair.objects.filter(follower = request.user, following = user).count() == 1
