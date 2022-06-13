@@ -1,25 +1,26 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
-from django.http import HttpResponseRedirect, Http404, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
+from django.utils.safestring import mark_safe
 from django import forms
 from json import loads
-
-from pandas import json_normalize
-
-
+from . import util
 from .models import User, Post, FollowPair, LikePair
+
+POSTS_PER_PAGE = 10
 
 
 class PostForm(forms.Form):
-    title = forms.CharField(label = "title", max_length = 64)
+    title = forms.CharField(label = mark_safe("Title"), max_length = 64,
+                            widget = forms.TextInput(attrs = {"class": 'form_title',}))
     content = forms.CharField(widget = forms.Textarea(attrs = {
-        'placeholder': "Enter content here..."
+        'placeholder': "Enter content here...", "class": "form_content",
     }))
-    
+
 
 def index(request):
     if request.method == "POST":
@@ -28,67 +29,54 @@ def index(request):
             title = form.cleaned_data["title"]
             content = form.cleaned_data["content"]
             Post.objects.create(
-                username = request.user,
-                title = title,
-                content = content,
+                username = request.user, title = title, content = content,
             )
         return HttpResponseRedirect(reverse("network:index"))
-    posts = Post.objects.all().order_by("-time")
-    for post in posts:
-        if request.user.is_authenticated:
-            post.liked = (True if LikePair.objects.filter(
-                    liker = request.user,
-                    likedpost = post.id
-                ).count() == 1 else False)
-        post.likes = LikePair.objects.filter(likedpost = post.id).count()
+    posts = util.fetchlikes(request, Post.objects.all().order_by("-time"))
     return render(request, "network/index.html", {
         "form": PostForm,
-        "posts": posts,
+        "posts": util.paginate(request, posts, POSTS_PER_PAGE).object_list,
+        "pagination": util.paginate(request, posts, POSTS_PER_PAGE),
+        "block_comment": not request.user.is_authenticated,
+    })
+
+
+@login_required(login_url="network:login")
+def following(request):
+    followpairs = FollowPair.objects.filter(follower = request.user)
+    following_ids = []
+    for followpair in followpairs: following_ids.append(followpair.following.id)
+    posts = util.fetchlikes(request, Post.objects.filter(username__in = following_ids))
+    return render(request, "network/index.html", {
+        "following_tab": True,
+        "posts": util.paginate(request, posts, POSTS_PER_PAGE).object_list,
+        "pagination": util.paginate(request, posts, POSTS_PER_PAGE),
+        "block_comment": not request.user.is_authenticated,
     })
 
 
 def profile_view(request, username):
     user = User.objects.get(username = username)
-    if request.method == "POST":
-        x = request.POST["followbutton"]
-        print(x)
-        if x == "follow":
-            FollowPair.objects.create(follower = request.user, following = user)
-        elif x == "unfollow":
-            FollowPair.objects.get(follower = request.user, following = user).delete()
-        else: raise Http404("Invalid button value")
     return render(request, "network/profile.html", {
+        "user_id": user.id,
         "username": username,
         "follower": FollowPair.objects.filter(following = user).count(),
         "following": FollowPair.objects.filter(follower = user).count(),
-        "posts": Post.objects.filter(username = request.user).order_by("-time"),
-        "self": (True if user == request.user else False),
-        "followed": (True if
-            FollowPair.objects.filter(follower = request.user, following = user).count() == 1
-            else False),
+        "posts": (util.fetchlikes(request, Post.objects.filter(username = user).order_by("-time")) if
+                  request.user.is_authenticated else []),
+        "self": user == request.user,
+        "followed": (FollowPair.objects.filter(follower = request.user, following = user).count() == 1
+                     if request.user.is_authenticated else None),
     })
 
 
-@csrf_exempt
-@login_required
-def like_comment(request):
-    print("HOLA")
-    if request.method != "POST":
-        return JsonResponse({
-            "error": "POST request required",
-        }, status = 400)
-    data = loads(request.body)
-    print(data)
-    print(data["text"])
-    if 1 == 1:
-        return JsonResponse({"e": "e"})
-    else: return JsonResponse({
-        "error": "only like or dislike value supported",
-    }, status = 400)
+def allposts(request):
+    posts = Post.objects.order_by("-time").all()
+    return JsonResponse([post.serialize() for post in posts], safe = False)
     
 
 @csrf_exempt
-@login_required
+@login_required(login_url="network:login")
 def likepost(request, post_id):
     print("LIKEPOST API ROUTE")
     # check if the post_id is valid
@@ -114,16 +102,14 @@ def likepost(request, post_id):
             likedpost = Post.objects.get(id = post_id),
         )
         newlike.save()
-        return JsonResponse({ "success": "liked", "post_id": post_id,
-                             "likes": likes})
+        return JsonResponse({ "success": "liked", "post_id": post_id, "likes": likes})
     else:
         likepair.delete()
-        return JsonResponse({ "success": "unliked", "post_id": post_id,
-                             "likes": likes})
+        return JsonResponse({ "success": "unliked", "post_id": post_id, "likes": likes})
 
 
 @csrf_exempt
-@login_required
+@login_required(login_url="network:login")
 def editpost(request, post_id):
     print("EDITPOST API ROUTE")
     # check if the post_id is valid
@@ -146,21 +132,39 @@ def editpost(request, post_id):
     # save edited content to database
     data = loads(request.body)
     content = data["edited_content"]
-    print(content)
     post = Post.objects.get(id = post_id)
-    print(post)
     post.content = content
-    
-    print(post.content)
     post.save()
     return JsonResponse({ "success": "edit saved", "post_id": post_id,
-                         "content": content })
+                         "content": content, "time": post.time,
+                         "likes": LikePair.objects.filter(likedpost = post_id).count(),
+                         "liked": LikePair.objects.filter(likedpost = post_id, liker = request.user).count() == 1
+                        })
+    
 
-
-# retrieve data from request
-# data = loads(request.body)
-# print(data)
-# print(request.user)
+@csrf_exempt
+@login_required(login_url="network:login")
+def followuser(request, user_id):
+    print("FOLLOW FEATURE API ROUTE")
+    # check if the user_id is valid
+    try: user = User.objects.get(id = user_id)
+    except Post.DoesNotExist:
+        return JsonResponse({
+            "error": "Invalid user id",
+        }, status = 404)
+    # only accept put request
+    if request.method != "PUT":
+        return JsonResponse({
+            "error": "Only accept PUT request",
+        }, status = 400)
+    # create followpair if not created already else delete existing ones
+    if FollowPair.objects.filter(follower = request.user, following = user).count() == 0:
+        FollowPair.objects.create(follower = request.user, following = user).save()
+        message = "followed"
+    else:
+        FollowPair.objects.filter(follower = request.user, following = user).delete()
+        message = "unfollowed"
+    return JsonResponse({ "success": message })
 
 
 def login_view(request):

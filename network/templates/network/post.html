@@ -1,0 +1,32 @@
+<div class="postdiv" id={{ post.id }}>
+    <article class="username">
+        <a href="{% url 'network:profile_view' username=post.username %}">
+            {{ post.username }}
+        </a><br>
+    </article>
+    <article class="title">
+        <strong>{{ post.title }}</strong><br>
+    </article>
+
+    <div class="editdiv" id={{ post.id }}>
+        <article class="content">{{ post.content }}</article>
+        <div class="likes" id="likes_{{post.id}}">
+            {{ post.likes }} likes
+        </div>
+        <div class="time">
+            Last edited on {{ post.time }}
+        </div><br>
+        {% if post.liked != None %}
+            <button class="like_button" data-id={{ post.id }}>
+                {% if post.liked %}
+                UNLIKE
+                {% else %}
+                LIKE
+                {% endif %}
+            </button>
+            {% if post.username == request.user %}
+                <button class="edit_button" data-id={{ post.id }}>Edit Post</button>
+            {% endif %}
+        {% endif %}
+    </div><br>
+</div>

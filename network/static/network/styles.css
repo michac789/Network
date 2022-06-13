@@ -1,0 +1,130 @@
+.newpost {
+    padding: 15px;
+    margin: 10px;
+    background-color: lightyellow;
+    padding: 15px;
+    margin: 20px;
+    border-width: 3px;
+    border-color: darkblue;
+    border-style: solid;
+}
+
+.postdiv {
+    background-color: lightcyan;
+    padding: 15px;
+    margin: 10px;
+    border-width: 5px;
+    border-color: black;
+    border-style: solid;
+    white-space: initial;
+}
+
+.postdiv > .title {
+    font-size: 25px;
+    font-weight: bold;
+    color: brown;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    text-decoration: underline;
+}
+
+.postdiv > .username {
+    font-size: 24px;
+    font-family:'Trebuchet MS', 'Arial';
+    color: purple;
+}
+
+.postdiv > .editdiv > .time {
+    font-size: 16px;
+    font-weight: bold;
+    display: inline;
+    float: right;
+}
+
+.postdiv > .editdiv > .likes {
+    font-size: 18px;
+    display: inline-block;
+    margin: 2px;
+}
+
+@media (min-width: 1000px) {
+    .form_title {
+        width: 60%;
+    }
+    .form_content {
+        width: 70%;
+        height: 200px;
+    }
+    .postdiv {
+        margin-left: 10%;
+        margin-right: 10%;
+    }
+}
+
+@media (max-width: 999px) {
+    .form_title {
+        width: 80%;
+    }
+    .form_content {
+        width: 90%;
+        height: 200px;
+    }
+}
+
+.postbutton {
+    color: darkslategray;
+    font-size: 20px;
+}
+
+.postbutton:hover {
+    background-color: lightgreen;
+}
+
+.like_button, .edit_button {
+    background-color: antiquewhite;
+    margin-right: 10px;
+}
+
+.like_button:hover, .edit_button:hover {
+    background-color: aquamarine;
+}
+
+.container1 {
+    margin: 10px;
+}
+
+.container2 {
+    font-size: 20px;
+    margin: 10px;
+}
+
+ul {
+  list-style: none;
+  display: table;
+}
+
+li {
+  display: table-row;
+}
+
+b {
+  display: table-cell;
+  padding-right: 4em;
+}
+
+.p1 {
+    padding: 5px;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+}
+
+#page_no {
+    padding: 20px;
+    color: green;
+}
+
+.test {
+    background-color: red;
+}

@@ -1,7 +1,10 @@
 {% extends 'network/layout.html' %}
 {% load static %}
 
+{% block title %}Profile Page{% endblock title %}
+
 {% block script %}
+    <script src="{% static "network/index.js" %}"></script>
     <script src="{% static "network/profile.js" %}"></script>
     <script src="https://unpkg.com/react@17/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js" crossorigin></script>
@@ -10,47 +13,61 @@
 
 {% block body %}
     {% if not user.is_authenticated %}
-        NOT LOGGED IN
-    {% elif self %}
-        This is yourself
-    {% elif followed %}
-        Followed
-        <form action="{% url 'network:profile_view' username=username %}" method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="followbutton" value="unfollow">
-            <button type="submit">Unfollow</button>
-        </form>
-    {% else %}
-        <form action="{% url 'network:profile_view' username=username %}" method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="followbutton" value="follow">
-            <button type="submit">Follow</button>
-        </form>
+        <div class="alert alert-warning container1" role="alert">
+            You are not logged in! Please log in to create post, like post, and follow other user!
+        </div>
     {% endif %}
-    Username: {{ username }}
-    Followers: {{ follower }}
-    Followings: {{ following }}
-    <br>
-
-    {% for post in posts %}
-        {{ post.title }}
-        {{ post.time }}
-        {{ post.like }}
-        <div id="post"></div>
-    {% endfor %}
-
-    <div id="post"></div>
+    
+    <div id="root"></div>
     <script type="text/babel">
-        function App() {
-            return (
-                <div>
-                    HELLO WORLD
-                    {{ post.title }}
-                    {{ post.time }}
-                    {{ post.like }}
-                </div>
-            );
+        function Tab(props) {
+            return(
+                <li><b>{ props.msg }</b>: { props.val }</li>
+            )
         }
-        ReactDOM.render(<App />, document.querySelector("#post"));
+
+        function App() {
+            let num = parseInt("{{ follower|safe }}")
+            const [followers, setFollowers] = React.useState(num)
+            let bool = ("{{ followed|safe }}")
+            const [message, setMessage] = React.useState(bool === "True" ? "Unfollow" : "Follow")
+
+            function toggle() {
+                console.log(message)
+                if (message === "Unfollow") {
+                    setMessage("Follow")
+                    setFollowers(followers - 1)
+                } else {
+                    setMessage("Unfollow")
+                    setFollowers(followers + 1)
+                }
+            }
+
+            return (
+                <div class="profile container2 border border-primary p1">
+                    <section class="profile_data">
+                        <ul>
+                            <Tab msg="Username" val="{{ username|safe }}" />
+                            <Tab msg="Followers" val={followers} />
+                            <Tab msg="Followings" val="{{ following|safe }}" />
+                        </ul>
+                    </section>
+                    <section class="container1">
+                        {
+                            "{{ self|safe }}" === "True" ? <div>This is yourself</div> :
+                                <button onClick={toggle} id="follow" data-userid="{{ user_id|safe }}">
+                                    {message} 
+                                </button>
+                        }
+                    </section>
+                </div>
+            )
+        }
+        ReactDOM.render(<App />, document.querySelector("#root"));
     </script>
+
+    {% include "network/pagination.html" %}
+    {% for post in posts %}
+        {% include "network/post.html" %}
+    {% endfor %}
 {% endblock body %}

@@ -1,59 +1,54 @@
 document.addEventListener("DOMContentLoaded", () => {
-
-    document.querySelector("#test").onclick = () => {
-        const x = document.querySelector("#test")
-        console.log(x.dataset.name)
-        test()
-    }
-
-    // like or dislike button functionality
-    document.querySelectorAll(".like_button").forEach(
-        el => el.onclick = () => { like(el.dataset.id) }
-    )
-    // edit post button functionality
-    document.querySelectorAll(".edit_button").forEach(
-        el => el.onclick = () => { edit(el.dataset.id) }
+    document.querySelectorAll(".postdiv").forEach(
+        el => el.onclick = (e) => {
+            // like or dislike button functionality
+            if (e.target && e.target.matches(".like_button")) {
+                like(e.target.dataset.id)
+            }
+            // edit post button functionality
+            if (e.target && e.target.matches(".edit_button")) {
+                edit(e.target.dataset.id)
+            }
+        }
     )
 })
 
-
-function like(val) {
-    fetch(`likepost/${val}`, {
+function like(id) {
+    fetch(`http://127.0.0.1:8000/likepost/${id}`, {
         method: "FETCH",
     })
     .then(response => response.json())
     .then(result => {
-        console.log(result)
         if (result.success === "liked"){
-            document.querySelector(`#like_button_${result.post_id}`).innerHTML = "UNLIKE";
-            document.querySelector(`#likes_${result.post_id}`).innerHTML = result.likes + 1;
+            document.querySelector(`.like_button[data-id='${id}']`).innerHTML = "UNLIKE";
+            document.querySelector(`#likes_${result.post_id}`).innerHTML = `${result.likes + 1} likes`;
         } else {
-            document.querySelector(`#like_button_${result.post_id}`).innerHTML = "LIKE";
-            document.querySelector(`#likes_${result.post_id}`).innerHTML = result.likes - 1;
+            document.querySelector(`.like_button[data-id='${id}']`).innerHTML = "LIKE";
+            document.querySelector(`#likes_${result.post_id}`).innerHTML = `${result.likes - 1} likes`;
         }
     })
-    .catch(error => console.log(`Error detected: ${error}`))
+    .catch(error => console.log(`Error detected:\n${error}`))
 }
-
 
 function edit(id){
     let message = document.createElement("article")
-    message.innerHTML = `<h3>Editing Post:</h3>`
-    let title = document.querySelector(`.postdiv[id='${id}']>.title`)
+    message.innerHTML = `<h4>Editing Post:</h4>`
+
     let textarea = document.createElement("textarea")
-    textarea.innerHTML = document.querySelector(`.postdiv[id='${id}']>.content`).innerHTML
+    textarea.innerHTML = document.querySelector(`.editdiv[id='${id}']>.content`).innerHTML
     textarea.setAttribute("id", `edited_${id}`)
+    textarea.setAttribute("class", "form_content")
+
     let button = document.createElement("button")
-    button.innerHTML = "confirm edit"
-    button.setAttribute("class", "confirmedit")
+    button.innerHTML = "Confirm Edit"
+    button.setAttribute("class", "postbutton")
     button.setAttribute("data-id", `${id}`)
     button.setAttribute("onclick", `saveedit(${id})`)
 
     const editdiv = document.createElement("div")
-    editdiv.append(message, title, textarea, button)
-    document.querySelector(`.postdiv[id='${id}']`).innerHTML = editdiv.innerHTML
+    editdiv.append(message, textarea, button)
+    document.querySelector(`.editdiv[id='${id}']`).innerHTML = editdiv.innerHTML
 }
-
 
 function saveedit(id){
     fetch(`editpost/${id}`, {
@@ -64,29 +59,33 @@ function saveedit(id){
     })
     .then(response => response.json())
     .then(result => {
-        console.log(result)
+        let content = document.createElement("article")
+        content.setAttribute("class", "content")
+        content.innerHTML = result.content
 
-        document.querySelector(`.postdiv[id='${result.post_id}']`).innerHTML = result.content
-        // TODO
+        let likediv = document.createElement("div")
+        likediv.setAttribute("class", "likes")
+        likediv.setAttribute("id", `likes_${id}`)
+        likediv.innerHTML = `${result.likes} likes`
 
-        // if (result.success === "liked"){
-        //     document.querySelector(`#like_button_${result.post_id}`).innerHTML = "UNLIKE";
-        //     document.querySelector(`#likes_${result.post_id}`).innerHTML = result.likes + 1;
-        // } else {
-        //     document.querySelector(`#like_button_${result.post_id}`).innerHTML = "LIKE";
-        //     document.querySelector(`#likes_${result.post_id}`).innerHTML = result.likes - 1;
-        // }
+        let timediv = document.createElement("div")
+        timediv.setAttribute("class", "time")
+        timediv.innerHTML = `Last edited on ${result.time}`
+        let br = document.createElement("br")
+
+        let button = document.createElement("button")
+        button.setAttribute("class", "like_button")
+        button.setAttribute("data-id", id)
+        button.innerHTML = result.liked ? "UNLIKE" : "LIKE"
+
+        let editbutton = document.createElement("button")
+        editbutton.setAttribute("class", "edit_button")
+        editbutton.setAttribute("data-id", id)
+        editbutton.innerHTML = "Edit Post"
+
+        const newdiv = document.createElement("div")
+        newdiv.append(content, likediv, timediv, br, button, editbutton)
+        document.querySelector(`.editdiv[id='${id}']`).innerHTML = newdiv.innerHTML
     })
-    .catch(error => console.log(`Error detected: ${error}`))
-}
-
-
-function test() {
-    console.log("CLICKED")
-    fetch('like', {
-        method: "POST",
-        body: JSON.stringify({
-            text: "XXX",
-        })
-    })
+    .catch(error => console.log(`Error detected:\n${error}`))
 }
