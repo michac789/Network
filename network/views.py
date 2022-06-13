@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
-from django.http import HttpResponseRedirect, Http404, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
@@ -64,24 +64,6 @@ def profile_view(request, username):
     })
 
 
-@csrf_exempt
-@login_required(login_url="network:login")
-def like_comment(request):
-    print("HOLA")
-    if request.method != "POST":
-        return JsonResponse({
-            "error": "POST request required",
-        }, status = 400)
-    data = loads(request.body)
-    print(data)
-    print(data["text"])
-    if 1 == 1:
-        return JsonResponse({"e": "e"})
-    else: return JsonResponse({
-        "error": "only like or dislike value supported",
-    }, status = 400)
-    
-    
 def allposts(request):
     posts = Post.objects.order_by("-time").all()
     return JsonResponse([post.serialize() for post in posts], safe = False)

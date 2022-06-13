@@ -41,8 +41,9 @@
 }
 
 .postdiv > .editdiv > .likes {
-    font-size: 20px;
+    font-size: 18px;
     display: inline-block;
+    margin: 2px;
 }
 
 @media (min-width: 1000px) {
@@ -104,4 +105,12 @@ li {
 b {
   display: table-cell;
   padding-right: 4em;
+}
+
+.p1 {
+    padding: 5px;
+}
+
+.test {
+    background-color: red;
 }

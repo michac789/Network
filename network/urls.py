@@ -1,6 +1,4 @@
-
 from django.urls import path
-
 from . import views
 
 app_name = "network"
@@ -13,10 +11,9 @@ urlpatterns = [
     path("profile/<str:username>", views.profile_view, name="profile_view"),
     
     # API Routes
-    path("like", views.like_comment),
-    path("allposts", views.allposts, name="allposts"),
-    
     path("likepost/<int:post_id>", views.likepost, name="likepost"),
     path("editpost/<int:post_id>", views.editpost, name="editpost"),
     path("followuser/<int:user_id>", views.followuser, name="follow"),
+    
+    path("allposts", views.allposts, name="allposts"),
 ]

@@ -6,8 +6,8 @@
 {% block script %}
     <script src="{% static "network/index.js" %}"></script>
     <script src="{% static "network/profile.js" %}"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react@17/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
 {% endblock script %}
 
@@ -16,47 +16,57 @@
         <div class="alert alert-warning container1" role="alert">
             You are not logged in! Please log in to create post, like post, and follow other user!
         </div>
-    {% elif self %}
-        This is yourself
-    {% else %}
-        <button type="submit" id="follow" data-userid={{ user_id }}>
-            {% if followed %}
-                Unfollow
-            {% else %}
-                Follow
-            {% endif %}
-        </button>
     {% endif %}
+    
+    <div id="root"></div>
+    <script type="text/babel">
+        function Tab(props) {
+            return(
+                <li><b>{ props.msg }</b>: { props.val }</li>
+            )
+        }
 
-    <div class="profile_data">
-        <ul>
-            <li><b>Username</b>: {{ username }}</li>
-            <li><b>Followers</b>: {{ follower }}</li>
-            <li><b>Followings</b>: {{ following }}</li>
-        </ul>
-    </div>
+        function App() {
+            let num = parseInt("{{ follower|safe }}")
+            const [followers, setFollowers] = React.useState(num)
+            let bool = ("{{ followed|safe }}")
+            const [message, setMessage] = React.useState(bool === "True" ? "Unfollow" : "Follow")
+
+            function toggle() {
+                console.log(message)
+                if (message === "Unfollow") {
+                    setMessage("Follow")
+                    setFollowers(followers - 1)
+                } else {
+                    setMessage("Unfollow")
+                    setFollowers(followers + 1)
+                }
+            }
+
+            return (
+                <div class="profile container2 border p1">
+                    <section class="profile_data">
+                        <ul>
+                            <Tab msg="Username" val="{{ username|safe }}" />
+                            <Tab msg="Followers" val={followers} />
+                            <Tab msg="Followings" val="{{ following|safe }}" />
+                        </ul>
+                    </section>
+                    <section class="container1">
+                        {
+                            "{{ self|safe }}" === "True" ? <div class="container">This is yourself</div> :
+                                <button onClick={toggle} id="follow" data-userid="{{ user_id|safe }}">
+                                    {message} 
+                                </button>
+                        }
+                    </section>
+                </div>
+            )
+        }
+        ReactDOM.render(<App />, document.querySelector("#root"));
+    </script>
 
     {% for post in posts %}
         {% include "network/post.html" %}
     {% endfor %}
-
-    <div id="abc"></div>
-    <script type="text/babel">
-        let x = "{{ following|safe }}"
-        console.log(x)
-        function App() {
-            return (
-                <div>
-                <h1>API Posts, {x}</h1>
-                </div>
-            );
-        }
-        ReactDOM.render(<App />, document.querySelector("#abc"));
-    </script>
-
-
-    <div id="post"></div>
-    <script type="text/babel" src="{% static "network/trial.js" %}">
-
-    </script>
 {% endblock body %}
